@@ -1,0 +1,24 @@
+Default: &defaults
+  user: QuickModIO
+  password: QuickModIO
+  host: localhost
+  port: 5432
+  database: QuickModIO
+  poolsize: 10
+
+Development:
+  <<: *defaults
+
+Testing:
+  database: QuickModIO_test
+  <<: *defaults
+
+Staging:
+  database: QuickModIO_staging
+  poolsize: 100
+  <<: *defaults
+
+Production:
+  database: QuickModIO_production
+  poolsize: 100
+  <<: *defaults
