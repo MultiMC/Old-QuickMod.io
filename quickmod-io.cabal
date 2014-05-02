@@ -21,6 +21,7 @@ library
                      Settings.StaticFiles
                      Settings.Development
                      Handler.Home
+                     Handler.QuickModFile
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

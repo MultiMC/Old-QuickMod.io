@@ -13,6 +13,7 @@ import qualified Settings
 import Settings.Development (development)
 import qualified Database.Persist
 import Database.Persist.Sql (SqlPersistT)
+import Data.Text (Text)
 import Settings.StaticFiles
 import Settings (widgetFile, Extra (..))
 import Model

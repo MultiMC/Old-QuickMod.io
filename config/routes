@@ -4,4 +4,10 @@
 /favicon.ico FaviconR GET
 /robots.txt RobotsR GET
 
-/ HomeR GET POST
+-- "Standard" pages
+/   HomeR       GET
+
+-- QuickMod files
+/index.json     QuickModIndexR  GET
+/mod/#Text      QuickModFileR   GET
+
