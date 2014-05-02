@@ -1,5 +1,5 @@
 {-# LANGUAGE PackageImports #-}
-import "QuickModIO" Application (getApplicationDev)
+import "quickmod-io" Application (getApplicationDev)
 import Network.Wai.Handler.Warp
     (runSettings, defaultSettings, setPort)
 import Control.Concurrent (forkIO)

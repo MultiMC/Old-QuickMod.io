@@ -1,3 +1,4 @@
+-- User info
 User
     ident Text
     password Text Maybe
@@ -9,4 +10,43 @@ Email
     verkey Text Maybe
     UniqueEmail email
 
- -- By default this file is used in Model.hs (which is imported by Foundation.hs)
+
+-- QuickMod stuff
+
+-- Entries which can't be stored in the database yet are commented out.
+-- I'll write the code to do that asap.
+
+-- Data structure for a QuickMod file.
+QuickMod
+    uid             Text
+    name            Text
+    -- references      [Reference]
+    modId           Text Maybe
+    description     Text Maybe
+    icon            Text Maybe
+    logo            Text Maybe
+    website         Text Maybe
+    issuesUrl       Text Maybe
+    donationsUrl    Text Maybe
+    tags            [Text]
+    categories      [Text]
+    -- authors         [Author]
+    -- versions        [Version]
+    UniqueUid uid
+    deriving Typeable Show
+
+-- Data structure for a QuickMod version.
+QmVersion
+    mod             QuickModId
+    name            Text
+    type            Text Maybe
+    mcCompat        [Text]
+    -- forgeCompat      Maybe (Interval Text)
+    -- references       [VsnReference]
+    -- dlType           Maybe DownloadType
+    -- installType      Maybe InstallType
+    md5             Text Maybe
+    url             Text Maybe
+    deriving Typeable Show
+
+
