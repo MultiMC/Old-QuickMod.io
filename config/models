@@ -19,11 +19,9 @@ Email
 -- Data structure for a QuickMod file.
 QuickMod
     uid             Text
-    owner           UserId
+    -- owner           UserId
     name            Text
-    -- references      [Reference]
-    modId           Text Maybe
-    description     Text Maybe
+    desc            Text
     icon            Text Maybe
     logo            Text Maybe
     website         Text Maybe
@@ -31,10 +29,23 @@ QuickMod
     donationsUrl    Text Maybe
     tags            [Text]
     categories      [Text]
-    -- authors         [Author]
-    -- versions        [Version]
     UniqueUid uid
     deriving Typeable Show
+
+-- Data structure for QuickMod authors.
+QmAuthor
+    mod     QuickModId
+    name    Text
+    roles   [Text]
+    deriving Typeable Show
+
+-- Data structure for QuickMod references.
+QmReference
+    mod QuickModId
+    uid Text
+    url Text
+    deriving Typeable Show
+
 
 -- Data structure for a QuickMod version.
 QmVersion
@@ -42,12 +53,17 @@ QmVersion
     name            Text
     type            Text Maybe
     mcCompat        [Text]
-    -- forgeCompat      Maybe (Interval Text)
-    -- references       [VsnReference]
-    -- dlType           Maybe DownloadType
-    -- installType      Maybe InstallType
+    forgeCompat     (Interval Text) Maybe
+    dlType          DownloadType Maybe
+    installType     InstallType  Maybe
     md5             Text Maybe
     url             Text Maybe
     deriving Typeable Show
 
+-- Data structure for version references.
+QmVersionRef
+    verId   QmVersionId
+    uid     Text
+    type    VsnRefType
+    modVsn  (Interval Text) Maybe
 

@@ -22,6 +22,9 @@ library
                      Settings.Development
                      Handler.Home
                      Handler.QuickModFile
+                     Handler.ManageQuickMods
+                     Data.QuickMod
+                     Data.QuickMod.Persistent
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
@@ -39,6 +42,7 @@ library
                 GADTs
                 GeneralizedNewtypeDeriving
                 FlexibleContexts
+                FlexibleInstances
                 EmptyDataDecls
                 NoMonomorphismRestriction
                 DeriveDataTypeable
@@ -51,6 +55,8 @@ library
                  , yesod-form                    >= 1.3        && < 1.4
                  , bytestring                    >= 0.9        && < 0.11
                  , text                          >= 0.11       && < 2.0
+                 , errors                        >= 1.4        && < 1.5
+                 , transformers                  >= 0.3        && < 0.4
                  , persistent                    >= 1.3        && < 1.4
                  , persistent-postgresql         >= 1.3        && < 1.4
                  , persistent-template           >= 1.3        && < 1.4
