@@ -8,7 +8,8 @@
 /   HomeR       GET
 
 -- QuickMod files
-/index.json     QuickModIndexR  GET
-/mod/#Text      QuickModFileR   GET
+/index.json         QuickModIndexR  GET
+/mod/#Text/quickmod QuickModFileR   GET
 
 /manage/add AddQuickModR GET POST
+
