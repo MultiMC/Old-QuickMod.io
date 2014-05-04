@@ -8,5 +8,5 @@
 <p>QuickMod.io is a website for hosting QuickMod files. It is not the only place that can host them, however, when we designed the QuickMod system, we felt it would help to provide a service where people can easily create and post QuickMod files.
 
 <h2>How can I use QuickMod.io?
-<p>You can start by <a href=@{AuthR LoginR}>logging in</a> and creating a QuickMod. QuickMod.io provides a nice and simple interface for creating and updating QuickMod files. If you create a QuickMod file for a mod, you should ook around to make sure there isn't already a QuickMod file for that mod. If one already exists, you might want to consider using it, rather than creating your own.
+<p>You can start by <a href=@{AuthR LoginR}>logging in</a> and creating a QuickMod. QuickMod.io provides a nice and simple interface for creating and updating QuickMod files. If you create a QuickMod file for a mod, you should look around to make sure there isn't already a QuickMod file for that mod. If one already exists, you might want to consider using it, rather than creating your own.
 
