@@ -1,4 +1,5 @@
-# Mod page labels
+# Mod page
+ModPageTitle modName@Text: QuickMod Page for #{modName}
 ModInfoTable: Mod Information
 ModUidLabel: UID
 ModCatsLabel: Categories

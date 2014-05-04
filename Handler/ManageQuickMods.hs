@@ -84,7 +84,10 @@ getQuickModPageR uid = do
 
     let paragraphs = linesToParagraphs $ quickModDesc qm
     -- TODO: make the URLs actual links.
-    defaultLayout $(widgetFile "quickmod-page")
+    defaultLayout $ do
+        renderMsg <- getMessageRender
+        setTitle $ toHtml $ renderMsg $ MsgModPageTitle $ quickModName qm
+        $(widgetFile "quickmod-page")
 
 
 -- | Shows the given QuickMod information in a description list with the given label if it exists.
