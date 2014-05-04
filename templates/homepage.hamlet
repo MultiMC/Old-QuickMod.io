@@ -1,0 +1,12 @@
+<h1>QuickMod.io
+
+<h2>What is QuickMod?
+<p>QuickMod is a system that aims to make hunting for Minecraft mod download links and modpack distribution permissions a thing of the past.
+<p>The system works using "QuickMod files", which are small text files containing information about a Minecraft mod, such as where to get it, and how to install it. These files can be read by a launcher such as <a href="http://multimc.org">MultiMC</a> and used to quickly and easily install several mods at once.
+
+<h2>What is QuickMod.io?
+<p>QuickMod.io is a website for hosting QuickMod files. It is not the only place that can host them, however, when we designed the QuickMod system, we felt it would help to provide a service where people can easily create and post QuickMod files.
+
+<h2>How can I use QuickMod.io?
+<p>You can start by <a href=@{AuthR LoginR}>logging in</a> and creating a QuickMod. QuickMod.io provides a nice and simple interface for creating and updating QuickMod files. If you create a QuickMod file for a mod, you should ook around to make sure there isn't already a QuickMod file for that mod. If one already exists, you might want to consider using it, rather than creating your own.
+

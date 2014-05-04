@@ -2,6 +2,7 @@
 module Handler.Home where
 
 import Import
+import Yesod.Auth
 
 -- This is a handler function for the GET request method on the HomeR
 -- resource pattern. All of your resource patterns are defined in
@@ -14,7 +15,5 @@ getHomeR :: Handler Html
 getHomeR = do
     defaultLayout $ do
         setTitle "Welcome To QuickMod.io!"
-        [whamlet|
-            <h1>This is an unfinished home page.
-        |]
+        $(widgetFile "homepage")
 
