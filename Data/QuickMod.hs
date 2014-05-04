@@ -26,6 +26,7 @@ infixr 1 ??
 data QuickMod =
     QuickMod { qmUid            :: T.Text
              , qmName           :: T.Text
+             , qmRepo           :: T.Text
              , qmReferences     :: [Reference]
              , qmUpdateUrl      :: QMUrl
              , qmVerifyUrl      :: Maybe QMUrl
@@ -46,6 +47,7 @@ data QuickMod =
 instance Default QuickMod where
     def = QuickMod { qmUid = ""
                    , qmName = ""
+                   , qmRepo = ""
                    , qmReferences = []
                    , qmUpdateUrl = ""
                    , qmVerifyUrl = Nothing
@@ -67,6 +69,7 @@ instance ToJSON QuickMod where
     toJSON qm = object $
            "uid"            .= qmUid qm
         ?? "name"           .= qmName qm
+        ?? "repo"           .= qmRepo qm
         ?? "references"     .= qmReferences qm
         ?? "updateUrl"      .= qmUpdateUrl qm
         ?? "verifyUrl"      .= qmVerifyUrl qm

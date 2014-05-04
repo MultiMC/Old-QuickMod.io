@@ -32,6 +32,7 @@ qmFileFromDB uid = do
         just $ def {
               Q.qmUid = quickModUid qm
             , Q.qmName = quickModName qm
+            , Q.qmRepo = "quickmod.io" -- TODO: This should depend on deployment configuration.
             , Q.qmDescription = Just $ quickModDesc qm
             , Q.qmIcon = quickModIcon qm
             , Q.qmLogo = quickModLogo qm
