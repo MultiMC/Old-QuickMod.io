@@ -68,3 +68,13 @@ data QuickModForm =
 
 -- }}}
 
+-- {{{ QuickMod Page
+
+getQuickModPageR :: Text -> Handler Html
+getQuickModPageR modid = do
+    defaultLayout [whamlet|
+        <h1>QuickMod page
+        |]
+
+-- }}}
+

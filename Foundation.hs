@@ -20,6 +20,7 @@ import Model
 import Text.Jasmine (minifym)
 import Text.Hamlet (hamletFile)
 import Yesod.Core.Types (Logger)
+import Navbar
 
 -- | The site argument for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -74,10 +75,18 @@ instance Yesod App where
 
         pc <- widgetToPageContent $ do
             $(combineStylesheets 'StaticR
-                [ css_normalize_css
-                , css_bootstrap_css
+                [ css_uikit_css
+                , css_uikit_almost_flat_css
+                ])
+            $(combineScripts 'StaticR
+                [ js_jquery_2_1_1_min_js
+                , js_uikit_js
                 ])
             $(widgetFile "default-layout")
+
+        nav <- widgetToPageContent $ do
+            $(widgetFile "navbar")
+
         giveUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
     -- This is done to provide an optimization for serving static files from

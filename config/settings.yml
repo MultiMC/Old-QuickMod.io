@@ -2,18 +2,21 @@ Default: &defaults
   host: "*4" # any IPv4 host
   port: 3000
   approot: "http://localhost:3000"
-  copyright: Insert copyright statement here
+  copyright: Copyright © 2014 MultiMC Contributors
   #analytics: UA-YOURCODE
 
 Development:
   <<: *defaults
 
 Testing:
+  approot: "http://test.quickmod.io"
   <<: *defaults
 
 Staging:
+  approot: "http://stage.quickmod.io"
   <<: *defaults
 
 Production:
-  #approot: "http://www.example.com"
+  approot: "http://quickmod.io"
   <<: *defaults
+

@@ -23,6 +23,7 @@ library
                      Handler.Home
                      Handler.QuickModFile
                      Handler.ManageQuickMods
+                     Navbar
                      Data.QuickMod
                      Data.QuickMod.Persistent
 
