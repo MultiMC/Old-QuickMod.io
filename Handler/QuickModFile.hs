@@ -38,10 +38,11 @@ qmFileFromDB uid = do
             , Q.qmWebsite = quickModWebsite qm
             , Q.qmIssuesUrl = quickModIssuesUrl qm
             , Q.qmDonationsUrl = quickModDonationsUrl qm
-            , Q.qmReferences = refs
             , Q.qmUpdateUrl = renderUrl $ QuickModFileR uid
             , Q.qmTags = quickModTags qm
             , Q.qmCategories = quickModCategories qm
+            , Q.qmAuthors = authors
+            , Q.qmReferences = refs
             }
 
 qmAuthorDB a' = Q.Author (qmAuthorName a) (qmAuthorRoles a) where a = entityVal a'
