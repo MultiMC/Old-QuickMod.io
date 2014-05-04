@@ -1,5 +1,5 @@
 <nav .uk-navbar>
-  <ul .uk-navbar-nav>
-    ^{navEntry "Home" "Go home" HomeR}
-    <li><a href=@{HomeR}>Home</a>
+  <div .uk-container .uk-container-center>
+    <ul .uk-navbar-nav>
+      ^{navEntry "Home" "Go home" HomeR}
 
