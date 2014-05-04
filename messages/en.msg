@@ -16,3 +16,7 @@ VsnNameLabel: Version
 VsnTypeLabel: Version Type
 VsnUrlLabel: Download URL
 
+
+# General stuff
+SubmitBtn: Submit
+
