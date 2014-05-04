@@ -29,6 +29,7 @@ qmFileFromDB uid = do
             qmId = entityKey qmEnt
         authors <- map qmAuthorDB <$> selectList [QmAuthorMod ==. qmId] []
         refs <- map qmRefDB <$> selectList [QmReferenceMod ==. qmId] []
+        versions <- lift $ qmVersionsFromDB qmId
         just $ def {
               Q.qmUid = quickModUid qm
             , Q.qmName = quickModName qm
@@ -44,6 +45,7 @@ qmFileFromDB uid = do
             , Q.qmCategories = quickModCategories qm
             , Q.qmAuthors = authors
             , Q.qmReferences = refs
+            , Q.qmVersions = versions
             }
 
 qmAuthorDB a' = Q.Author (qmAuthorName a) (qmAuthorRoles a) where a = entityVal a'
@@ -51,11 +53,9 @@ qmAuthorDB a' = Q.Author (qmAuthorName a) (qmAuthorRoles a) where a = entityVal 
 qmRefDB r' = Q.Reference (qmReferenceUid r) (qmReferenceUrl r) where r = entityVal r'
 
 -- | This function gets a list of QuickMod Version data structures for the given QuickMod ID.
---qmVersionsFromDB :: QuickModId -> YesodPersistBackend App (HandlerT App IO) [Q.Version]
-qmVersionsFromDB qmid = do
-    versions <- selectList [QmVersionMod ==. qmid] []
-    return $ mapM
-        (\vEnt -> do
+qmVersionsFromDB :: QuickModId -> YesodPersistBackend App (HandlerT App IO) [Q.Version]
+qmVersionsFromDB qmid =
+    mapM (\vEnt -> do
             let v = entityVal vEnt
                 vId = entityKey vEnt
             vRefs <- map vRefDB <$> selectList [QmVersionRefVerId ==. vId] []
@@ -70,7 +70,7 @@ qmVersionsFromDB qmid = do
                 , Q.vsnMd5 = qmVersionMd5 v
                 , Q.vsnUrl = qmVersionUrl v
                 }
-        ) versions
+        ) =<< selectList [QmVersionMod ==. qmid] []
 
 vRefDB r' = Q.VsnReference {
       Q.vrefUid = qmVersionRefUid r
