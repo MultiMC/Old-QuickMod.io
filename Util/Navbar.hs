@@ -1,4 +1,4 @@
-module Navbar where
+module Util.Navbar where
 
 import Prelude
 

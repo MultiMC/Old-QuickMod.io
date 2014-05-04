@@ -3,6 +3,9 @@ module Handler.ManageQuickMods where
 import Import
 
 import qualified Data.Text as T
+import qualified Text.Blaze.Html5 as H
+import Util.Text
+import Util.QuickMod
 
 -- {{{ Add QuickMod
 
@@ -71,10 +74,50 @@ data QuickModForm =
 -- {{{ QuickMod Page
 
 getQuickModPageR :: Text -> Handler Html
-getQuickModPageR modid = do
+getQuickModPageR uid = do
+    -- TODO: Do all of this in one DB transaction.
+    qmEnt <- requireQuickMod uid
+    let qm = entityVal qmEnt
+        qmId = entityKey qmEnt
+    authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
+
+    let paragraphs = linesToParagraphs $ quickModDesc qm
+    -- TODO: make the URLs actual links.
     defaultLayout [whamlet|
-        <h1>QuickMod page
+        <h1>#{quickModName qm}
+        <table .uk-table .uk-table-striped .uk-table-hover>
+            <thead>
+                <tr>
+                    <th colspan=2>_{MsgModInfoTable}
+            <tbody>
+                ^{infoEntry  MsgModUidLabel $           quickModUid qm}
+                ^{infoEntry  MsgModAuthorsLabel $       (joinWith' ", " $ map qmAuthorName $ authors)}
+                ^{infoEntryM MsgModWebsiteLabel $       quickModWebsite qm}
+                ^{infoEntryM MsgModIssuesUrlLabel $     quickModIssuesUrl qm}
+                ^{infoEntryM MsgModDonationsUrlLabel $  quickModDonationsUrl qm}
+                ^{infoEntry  MsgModCatsLabel $          (joinWith' ", " $ quickModCategories qm)}
+                ^{infoEntry  MsgModTagsLabel $          (joinWith' ", " $ quickModTags qm)}
+
+        #{paragraphs}
         |]
+
+
+-- | Shows the given QuickMod information in a description list with the given label if it exists.
+infoEntryM :: AppMessage -> Maybe Text -> Widget
+infoEntryM msg mText = maybe [whamlet||] (infoEntry msg) mText
+
+-- | Shows the given QuickMod information in a description list with the given label.
+infoEntry :: AppMessage -> Text -> Widget
+infoEntry msg text = [whamlet|
+    <tr>
+        <th>_{msg}
+        <td>#{text}
+    |]
+
+
+-- | Takes the given text and converts newlines into HTML <p> tags.
+linesToParagraphs :: Text -> Html
+linesToParagraphs = mapM_ (H.p . toHtml) . T.lines
 
 -- }}}
 

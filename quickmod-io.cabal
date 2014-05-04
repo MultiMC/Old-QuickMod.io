@@ -24,6 +24,8 @@ library
                      Handler.QuickModFile
                      Handler.ManageQuickMods
                      Util.Navbar
+                     Util.Text
+                     Util.QuickMod
                      Data.QuickMod
                      Data.QuickMod.Persistent
 
@@ -58,6 +60,7 @@ library
                  , text                          >= 0.11       && < 2.0
                  , errors                        >= 1.4        && < 1.5
                  , transformers                  >= 0.3        && < 0.4
+                 , blaze-html                    >= 0.7        && < 0.8
                  , persistent                    >= 1.3        && < 1.4
                  , persistent-postgresql         >= 1.3        && < 1.4
                  , persistent-template           >= 1.3        && < 1.4
