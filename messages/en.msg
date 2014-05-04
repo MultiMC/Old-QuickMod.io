@@ -8,3 +8,7 @@ ModWebsiteLabel: Website
 ModIssuesUrlLabel: Bug Tracker
 ModDonationsUrlLabel: Donations
 
+VsnNameLabel: Version
+VsnTypeLabel: Version Type
+VsnUrlLabel: Download URL
+

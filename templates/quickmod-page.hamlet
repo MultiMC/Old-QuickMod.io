@@ -1,0 +1,43 @@
+<h1>#{quickModName qm}
+
+<div .uk-grid>
+  <div .uk-width-1-3>
+    <div .uk-panel>
+      <table .uk-table>
+        <thead>
+          <tr>
+            <th colspan=2>_{MsgModInfoTable}
+        <tbody>
+          ^{infoEntry  MsgModUidLabel $           quickModUid qm}
+          ^{infoEntry  MsgModAuthorsLabel $       (joinWith' ", " $ map qmAuthorName $ authors)}
+          ^{infoEntryM MsgModWebsiteLabel $       quickModWebsite qm}
+          ^{infoEntryM MsgModIssuesUrlLabel $     quickModIssuesUrl qm}
+          ^{infoEntryM MsgModDonationsUrlLabel $  quickModDonationsUrl qm}
+          ^{infoEntry  MsgModCatsLabel $          (joinWith' ", " $ quickModCategories qm)}
+          ^{infoEntry  MsgModTagsLabel $          (joinWith' ", " $ quickModTags qm)}
+
+  <div .uk-width-2-3>
+    <div .uk-panel>
+      <table .uk-table .uk-table.striped .uk-table-hover>
+        <thead>
+          <tr>
+            <th>_{MsgVsnNameLabel}
+            <th>_{MsgVsnTypeLabel}
+            <th>_{MsgVsnUrlLabel}
+        <tbody>
+          $forall vsn <- versions
+            <tr>
+              <td>#{qmVersionName vsn}
+
+              $maybe type <- qmVersionType vsn
+                <td>#{type}
+              $nothing
+                <td>N/A
+
+              $maybe url <- qmVersionUrl vsn
+                <td><a href=#{url}>#{url}</a>
+              $nothing
+                <td>N/A
+
+#{paragraphs}
+

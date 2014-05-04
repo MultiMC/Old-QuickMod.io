@@ -29,6 +29,7 @@ $newline never
               ^{pageBody nav}
             <div #main .uk-container .uk-container-center role="main">
               ^{pageBody pc}
+              <hr>
               <footer>
                 #{extraCopyright $ appExtra $ settings master}
 

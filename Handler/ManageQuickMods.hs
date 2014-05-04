@@ -80,26 +80,11 @@ getQuickModPageR uid = do
     let qm = entityVal qmEnt
         qmId = entityKey qmEnt
     authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
+    versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
 
     let paragraphs = linesToParagraphs $ quickModDesc qm
     -- TODO: make the URLs actual links.
-    defaultLayout [whamlet|
-        <h1>#{quickModName qm}
-        <table .uk-table .uk-table-striped .uk-table-hover>
-            <thead>
-                <tr>
-                    <th colspan=2>_{MsgModInfoTable}
-            <tbody>
-                ^{infoEntry  MsgModUidLabel $           quickModUid qm}
-                ^{infoEntry  MsgModAuthorsLabel $       (joinWith' ", " $ map qmAuthorName $ authors)}
-                ^{infoEntryM MsgModWebsiteLabel $       quickModWebsite qm}
-                ^{infoEntryM MsgModIssuesUrlLabel $     quickModIssuesUrl qm}
-                ^{infoEntryM MsgModDonationsUrlLabel $  quickModDonationsUrl qm}
-                ^{infoEntry  MsgModCatsLabel $          (joinWith' ", " $ quickModCategories qm)}
-                ^{infoEntry  MsgModTagsLabel $          (joinWith' ", " $ quickModTags qm)}
-
-        #{paragraphs}
-        |]
+    defaultLayout $(widgetFile "quickmod-page")
 
 
 -- | Shows the given QuickMod information in a description list with the given label if it exists.
@@ -118,6 +103,7 @@ infoEntry msg text = [whamlet|
 -- | Takes the given text and converts newlines into HTML <p> tags.
 linesToParagraphs :: Text -> Html
 linesToParagraphs = mapM_ (H.p . toHtml) . T.lines
+
 
 -- }}}
 
