@@ -82,7 +82,7 @@ getQuickModPageR uid = do
     authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
     versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
 
-    let paragraphs = linesToParagraphs $ quickModDesc qm
+    let description = linesToParagraphs $ quickModDesc qm
     -- TODO: make the URLs actual links.
     defaultLayout $ do
         renderMsg <- getMessageRender

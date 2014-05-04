@@ -39,5 +39,8 @@
               $nothing
                 <td>N/A
 
-#{paragraphs}
+<div .uk-grid>
+  <div .uk-width-1-1>
+    <div .uk-panel>
+      #{description}
 
