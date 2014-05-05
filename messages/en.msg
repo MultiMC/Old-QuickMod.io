@@ -3,6 +3,7 @@
 
 # Mod page
 InfoFormLegend: Edit QuickMod Info
+AddFormLegend: New QuickMod
 CantEdit: You are not allowed to edit this QuickMod.
 ModPageTitle modName@Text: QuickMod Page for #{modName}
 EditModPageTitle modName@Text: Edit QuickMod for #{modName}

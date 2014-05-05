@@ -132,52 +132,41 @@ infoEntry editable fId msg text = [whamlet|
 
 getAddQuickModR :: Handler Html
 getAddQuickModR = do
-    (wform, enctype) <- generateFormPost addModForm
-    defaultLayout $ formWidget wform enctype []
+    (wform, enctype) <- generateFormPost $ editForm $ Nothing
+    defaultLayout $ addModFormWidget wform enctype []
 
 postAddQuickModR :: Handler Html
 postAddQuickModR = do
     userId <- requireAuthId
-    ((result, wform), enctype) <- runFormPost addModForm
+    ((result, wform), enctype) <- runFormPost $ editForm $ Nothing
     case result of
          FormMissing -> error "Form missing"
-         FormFailure errs -> defaultLayout $ formWidget wform enctype errs
-         FormSuccess qmf  -> do
+         FormFailure errs -> defaultLayout $ addModFormWidget wform enctype errs
+         FormSuccess qif  -> do
              let quickMod = QuickMod {
-                  quickModUid = qmfUid qmf
-                , quickModName = qmfName qmf
+                  quickModUid = qifUid qif
+                , quickModName = qifName qif
                 , quickModOwner = userId
                 , quickModDesc = ""
                 , quickModIcon = Nothing
                 , quickModLogo = Nothing
-                , quickModWebsite = Nothing
-                , quickModIssuesUrl = Nothing
-                , quickModDonationsUrl = Nothing
+                , quickModWebsite = qifWebsite qif
+                , quickModIssuesUrl = qifIssuesUrl qif
+                , quickModDonationsUrl = qifDonationsUrl qif
                 , quickModTags = []
                 , quickModCategories = []
                 }
              runDB $ insert_ quickMod
-             redirect $ QuickModPageR $ qmfUid qmf
+             redirect $ QuickModPageR $ qifUid qif
 
-formWidget :: Widget -> Enctype -> [Text] -> Widget
-formWidget wform enctype errs =
-    [whamlet|
-        <form method=post action=@{AddQuickModR} enctype=#{enctype}>
-            <div class="alert">#{show errs}
-            ^{wform}
+addModFormWidget :: Widget -> Enctype -> [Text] -> Widget
+addModFormWidget wform enctype errs = [whamlet|
+        <form .uk-form .uk-form-horizontal method=post action=@{AddQuickModR} enctype=#{enctype}>
+            <fieldset>
+                <legend>_{MsgAddFormLegend}
+                ^{wform}
             <button>_{MsgSubmitBtn}
     |]
-
--- | The form
-addModForm :: Form QuickModForm
-addModForm = renderDivs $ QuickModForm
-    <$> areq textField "Mod ID" Nothing
-    <*> areq textField "Mod name" Nothing
-
-data QuickModForm =
-    QuickModForm { qmfUid       :: Text
-                 , qmfName      :: Text
-                 } deriving (Show)
 
 -- }}}
 
