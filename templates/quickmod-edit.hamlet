@@ -1,0 +1,6 @@
+<form .uk-form .uk-form-horizontal action=@{QuickModEditR uid} enctype=#{enctype} method=post>
+  <fieldset>
+    <legend>_{MsgInfoFormLegend}
+    ^{wform}
+  <input type=submit value=_{MsgSaveBtn}>
+

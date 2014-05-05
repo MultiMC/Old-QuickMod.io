@@ -48,7 +48,7 @@ editForm formData = do
         <*> aopt urlField       (fsl MsgModWebsiteLabel       $ Nothing)                    defWebsite
         <*> aopt urlField       (fsl MsgModIssuesUrlLabel     $ Nothing)                    defIssuesUrl
         <*> aopt urlField       (fsl MsgModDonationsUrlLabel  $ Nothing)                    defDonationsUrl
-        <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    defAuthors
+        <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    defAuthors  -- TODO: List fields
         <*> areq textField      (fsl MsgModCatsLabel          $ Nothing)                    defCats
         <*> areq textField      (fsl MsgModTagsLabel          $ Nothing)                    defTags
   where
@@ -74,7 +74,7 @@ data QInfoFormData = QInfoFormData
     }
 
 formDataFromInfo :: QModPageInfo -> QInfoFormData
-formDataFromInfo (QModPageInfo qm authors _) = QInfoFormData
+formDataFromInfo (QModPageInfo qm _ authors _) = QInfoFormData
     { qifUid = quickModUid qm
     , qifName = quickModName qm
     , qifWebsite = quickModWebsite qm
@@ -100,10 +100,11 @@ requireQMPageInfo uid = do
         qmId = entityKey qmEnt
     authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
     versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
-    return $ QModPageInfo qm authors versions
+    return $ QModPageInfo qm qmId authors versions
 
 data QModPageInfo = QModPageInfo
     { qiMod     :: QuickMod
+    , qiModId   :: QuickModId
     , qiAuthors :: [QmAuthor]
     , qiVsns    :: [QmVersion]
     }
@@ -208,7 +209,7 @@ requireCanEdit qm = do
 -- | Handler for the view QuickMod page.
 getQuickModPageR :: Text -> Handler Html
 getQuickModPageR uid = do
-    info@(QModPageInfo qm authors versions) <- requireQMPageInfo uid
+    info@(QModPageInfo qm _ authors versions) <- requireQMPageInfo uid
     let infoFormData = formDataFromInfo info
         description = linesToParagraphs $ quickModDesc qm
     defaultLayout $ do
@@ -222,26 +223,36 @@ getQuickModPageR uid = do
 
 getQuickModEditR :: Text -> Handler Html
 getQuickModEditR uid = do
-    info@(QModPageInfo qm _ _) <- requireQMPageInfo uid
+    info@(QModPageInfo qm _ _ _) <- requireQMPageInfo uid
     requireCanEdit qm
     (wform, enctype) <- generateFormPost $ editForm $ Just $ formDataFromInfo info
     defaultLayout $ do
-        [whamlet|
-            <form .uk-form .uk-form-horizontal action=@{QuickModEditR uid} enctype=#{enctype} method=post>
-                <fieldset>
-                    <legend>_{MsgInfoFormLegend}
-                    ^{wform}
-                <input type=submit value=_{MsgSaveBtn}>
-        |]
+        renderMsg <- getMessageRender
+        setTitle $ toHtml $ renderMsg $ MsgEditModPageTitle $ quickModName qm
+        $(widgetFile "quickmod-edit")
 
 -- | Post handler for the edit page.
 postQuickModEditR :: Text -> Handler Html
 postQuickModEditR uid = do
-    qmEnt <- requireQuickMod uid
-    let qmId = entityKey qmEnt
-        qm = entityVal qmEnt
+    info@(QModPageInfo qm qmId _ _) <- requireQMPageInfo uid
     requireCanEdit qm
-    error "Unimplemented"
+    ((result, wform), enctype) <- runFormPost $ editForm $ Just $ formDataFromInfo info
+    case result of
+         FormMissing -> error "Form missing"
+         FormFailure err ->
+             defaultLayout $ do
+                 $(widgetFile "quickmod-edit")
+         FormSuccess form -> do
+             runDB $ update qmId
+                [ QuickModUid =. qifUid form
+                , QuickModName =. qifName form
+                , QuickModWebsite =. qifWebsite form
+                , QuickModIssuesUrl =. qifIssuesUrl form
+                , QuickModDonationsUrl =. qifDonationsUrl form
+                ]
+             renderMsg <- getMessageRender
+             setMessage $ toHtml $ renderMsg $ MsgQuickModUpdated
+             redirect $ QuickModPageR $ qifUid form
 
 -- }}}
 
