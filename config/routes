@@ -11,6 +11,7 @@
 /index.json         QuickModIndexR  GET
 /mod/#Text/quickmod QuickModFileR   GET
 
-/manage/add AddQuickModR GET POST
-/mod/#Text QuickModPageR GET
+/submit         AddQuickModR    GET POST
+/mod/#Text      QuickModPageR   GET
+/mod/#Text/edit QuickModEditR   POST
 

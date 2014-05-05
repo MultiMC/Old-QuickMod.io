@@ -5,6 +5,7 @@
 ModPageTitle modName@Text: QuickMod Page for #{modName}
 ModInfoTable: Mod Information
 ModUidLabel: UID
+ModNameLabel: Mod Name
 ModCatsLabel: Categories
 ModTagsLabel: Tags
 ModAuthorsLabel: Authors

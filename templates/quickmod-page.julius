@@ -1,0 +1,4 @@
+$(document).ready(function() {
+    $(".edit").editable("@{QuickModEditR uid}");
+});
+
