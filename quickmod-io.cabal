@@ -25,6 +25,7 @@ library
                      Handler.ManageQuickMods
                      Util.Navbar
                      Util.Text
+                     Util.Error
                      Util.QuickMod
                      Data.QuickMod
                      Data.QuickMod.Persistent

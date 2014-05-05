@@ -2,10 +2,15 @@ module Handler.ManageQuickMods where
 
 import Import
 
+import Control.Error
+import Control.Monad
+import Data.Maybe
 import qualified Data.Text as T
 import qualified Text.Blaze.Html5 as H
 import Util.Text
 import Util.QuickMod
+import Util.Error
+import Yesod.Auth
 import Yesod.Form.Input
 
 -- {{{ Add QuickMod
@@ -17,6 +22,7 @@ getAddQuickModR = do
 
 postAddQuickModR :: Handler Html
 postAddQuickModR = do
+    userId <- requireAuthId
     ((result, wform), enctype) <- runFormPost addModForm
     case result of
          FormMissing -> error "Form missing"
@@ -25,7 +31,7 @@ postAddQuickModR = do
              let quickMod = QuickMod {
                   quickModUid = qmfUid qmf
                 , quickModName = qmfName qmf
-                --, quickModOwner = UserId 0 -- TODO: Implement
+                , quickModOwner = userId
                 , quickModDesc = ""
                 , quickModIcon = Nothing
                 , quickModLogo = Nothing
@@ -98,12 +104,17 @@ linesToParagraphs :: Text -> Html
 linesToParagraphs = mapM_ (H.p . toHtml) . T.lines
 
 
-getQuickModPageR :: Text -> Handler Html
-getQuickModPageR = quickModPage True
+-- | Checks if the current user can edit the given QuickMod.
+canEdit :: QuickMod -> Handler Bool
+canEdit qm = isJustT $ do
+    usrId <- hoistMaybeT $ maybeAuthId
+    guard (quickModOwner qm == usrId)
+    return ()
 
-quickModPage :: Bool -> Text -> Handler Html
-quickModPage editing uid = do
+getQuickModPageR :: Text -> Handler Html
+getQuickModPageR uid = do
     info@(QModPageInfo qm authors versions) <- requireQMPageInfo uid
+    editing <- canEdit qm
     let (iEntry, iEntryM) = (infoEntry editing, infoEntryM editing)
     let description = linesToParagraphs $ quickModDesc qm
     -- TODO: make the URLs actual links.
@@ -113,9 +124,6 @@ quickModPage editing uid = do
         renderMsg <- getMessageRender
         setTitle $ toHtml $ renderMsg $ MsgModPageTitle $ quickModName qm
         $(widgetFile "quickmod-page")
-  where
-    iEntry =  infoEntry editing
-    iEntryM = infoEntryM editing
 
 
 -- | Form data for QuickMod edits
@@ -133,6 +141,11 @@ postQuickModEditR :: Text -> Handler Text
 postQuickModEditR uid = do
     qmEnt <- requireQuickMod uid
     let qmId = entityKey qmEnt
+        qm = entityVal qmEnt
+    allowEdit <- canEdit qm
+    if not allowEdit
+       then permissionDeniedI MsgCantEdit
+       else return ()
     (QModEditFormData field value) <- runInputPost quickModEditForm
     let updateQ = case field of
          "name" ->              [QuickModName =. value]

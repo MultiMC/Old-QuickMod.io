@@ -9,6 +9,7 @@ import Data.Default
 import qualified Data.ByteString.Lazy as B
 import qualified Data.Text.Encoding as TE
 import qualified Data.QuickMod as Q
+import Util.Error
 
 getQuickModFileR :: Text -> Handler Text
 getQuickModFileR uid = do
@@ -77,10 +78,6 @@ vRefDB r' = Q.VsnReference {
     , Q.vrefType = qmVersionRefType r
     , Q.vrefVersion = qmVersionRefModVsn r
     } where r = entityVal r'
-
-
-hoistMaybeT :: Monad m => m (Maybe a) -> MaybeT m a
-hoistMaybeT m = hoistMaybe =<< lift m
 
 
 getQuickModIndexR :: Handler Html

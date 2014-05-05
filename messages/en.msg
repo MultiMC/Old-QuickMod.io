@@ -2,6 +2,7 @@
 
 
 # Mod page
+CantEdit: You are not allowed to edit this QuickMod.
 ModPageTitle modName@Text: QuickMod Page for #{modName}
 ModInfoTable: Mod Information
 ModUidLabel: UID
