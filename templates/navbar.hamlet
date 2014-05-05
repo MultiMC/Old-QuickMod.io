@@ -1,7 +1,13 @@
 <nav .uk-navbar>
   <div .uk-container .uk-container-center>
     <a href=@{HomeR} .uk-navbar-brand>QuickMod.io
-    <ul .uk-navbar-nav>
-      ^{navEntry "Home" "Go home" HomeR}
-      ^{navEntry "Submit" "Submit a new QuickMod" AddQuickModR}
+    <div>
+      <ul .uk-navbar-nav>
+        ^{navEntry (SomeMessage MsgNavNewQuickMod) (SomeMessage MsgNavSubNewQuickMod) AddQuickModR}
+    <div .uk-navbar-flip>
+      <ul .uk-navbar-nav>
+        $maybe _ <- mAuth
+          ^{navEntry (SomeMessage MsgNavLogout) (SomeMessage MsgNavSubLogout) (AuthR LogoutR)}
+        $nothing
+          ^{navEntry (SomeMessage MsgNavLogin) (SomeMessage MsgNavSubLogin) (AuthR LoginR)}
 

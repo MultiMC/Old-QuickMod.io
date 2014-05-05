@@ -1,6 +1,15 @@
 # Homepage
 
 
+# Navbar
+NavNewQuickMod: New QuickMod
+NavSubNewQuickMod: Create a new QuickMod
+NavLogin: Log In
+NavSubLogin: Log in to your account
+NavLogout: Log Out
+NavSubLogout: Log out of your account
+
+
 # Mod page
 InfoFormLegend: Edit QuickMod Info
 AddFormLegend: New QuickMod
