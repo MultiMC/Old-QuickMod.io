@@ -13,5 +13,5 @@
 
 /submit         AddQuickModR    GET POST
 /mod/#Text      QuickModPageR   GET
-/mod/#Text/edit QuickModEditR   POST
+/mod/#Text/edit QuickModEditR   GET POST
 

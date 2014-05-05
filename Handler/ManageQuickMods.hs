@@ -10,8 +10,122 @@ import qualified Text.Blaze.Html5 as H
 import Util.Text
 import Util.QuickMod
 import Util.Error
+import Util.Forms
 import Yesod.Auth
 import Yesod.Form.Input
+
+-- {{{ Info form
+
+-- | A table for displaying QuickMod info
+infoTable :: QInfoFormData -> Widget
+infoTable qm = [whamlet|
+    ^{iEntry  "uid"           MsgModUidLabel $            qifUid qm}
+    ^{iEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
+    ^{iEntryM "website"       MsgModWebsiteLabel $        qifWebsite qm}
+    ^{iEntryM "issuesUrl"     MsgModIssuesUrlLabel $      qifIssuesUrl qm}
+    ^{iEntryM "donationsUrl"  MsgModDonationsUrlLabel $   qifDonationsUrl qm}
+    ^{iEntry  "categories"    MsgModCatsLabel $           qifCats qm}
+    ^{iEntry  "tags"          MsgModTagsLabel $           qifTags qm}
+    |]
+  where
+    iEntry = infoEntry False
+    iEntryM = infoEntryM False
+
+-- | A form for editing QuickMod info.
+editForm :: Maybe QInfoFormData -> Form QInfoFormData
+editForm formData = do
+    let defUid          = qifUid <$> formData
+        defName         = qifName <$> formData
+        defWebsite      = qifWebsite <$> formData
+        defIssuesUrl    = qifIssuesUrl <$> formData
+        defDonationsUrl = qifDonationsUrl <$> formData
+        defAuthors      = qifAuthors <$> formData
+        defCats         = qifCats <$> formData
+        defTags         = qifTags <$> formData
+    renderDivsUk $ QInfoFormData
+        <$> areq textField      (fsl MsgModUidLabel           $ Just MsgModUidTooltip)      defUid
+        <*> areq textField      (fsl MsgModNameLabel          $ Nothing)                    defName
+        <*> aopt urlField       (fsl MsgModWebsiteLabel       $ Nothing)                    defWebsite
+        <*> aopt urlField       (fsl MsgModIssuesUrlLabel     $ Nothing)                    defIssuesUrl
+        <*> aopt urlField       (fsl MsgModDonationsUrlLabel  $ Nothing)                    defDonationsUrl
+        <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    defAuthors
+        <*> areq textField      (fsl MsgModCatsLabel          $ Nothing)                    defCats
+        <*> areq textField      (fsl MsgModTagsLabel          $ Nothing)                    defTags
+  where
+    fsl :: AppMessage -> Maybe AppMessage -> FieldSettings App
+    fsl msg tt = FieldSettings
+        { fsLabel = SomeMessage msg
+        , fsTooltip = SomeMessage <$> tt
+        , fsId = Nothing
+        , fsName = Nothing
+        , fsAttrs = [("class", "uk-form-width-large")]
+        }
+
+-- | Data type for holding QuickMod info for the table.
+data QInfoFormData = QInfoFormData
+    { qifUid            :: Text
+    , qifName           :: Text
+    , qifWebsite        :: Maybe Text
+    , qifIssuesUrl      :: Maybe Text
+    , qifDonationsUrl   :: Maybe Text
+    , qifAuthors        :: Text -- TODO: Make this a list somehow. Will need to define new form fields.
+    , qifCats           :: Text -- ~meow
+    , qifTags           :: Text
+    }
+
+formDataFromInfo :: QModPageInfo -> QInfoFormData
+formDataFromInfo (QModPageInfo qm authors _) = QInfoFormData
+    { qifUid = quickModUid qm
+    , qifName = quickModName qm
+    , qifWebsite = quickModWebsite qm
+    , qifIssuesUrl = quickModIssuesUrl qm
+    , qifDonationsUrl = quickModDonationsUrl qm
+    , qifAuthors = joinWith' ", " $ map qmAuthorName $ authors
+    , qifTags = joinWith' ", " $ quickModTags qm
+    , qifCats = joinWith' ", " $ quickModCategories qm
+    }
+
+collapseMaybe :: Maybe (Maybe a) -> Maybe a
+collapseMaybe val = val ?: Nothing
+
+-- }}}
+
+-- {{{ Page info
+
+requireQMPageInfo :: Text -> Handler QModPageInfo
+requireQMPageInfo uid = do
+    -- TODO: Do all of this in one DB transaction.
+    qmEnt <- requireQuickMod uid
+    let qm = entityVal qmEnt
+        qmId = entityKey qmEnt
+    authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
+    versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
+    return $ QModPageInfo qm authors versions
+
+data QModPageInfo = QModPageInfo
+    { qiMod     :: QuickMod
+    , qiAuthors :: [QmAuthor]
+    , qiVsns    :: [QmVersion]
+    }
+
+-- }}}
+
+-- {{{ Page stuff
+
+-- | Shows the given QuickMod information in a description list with the given label if it exists.
+infoEntryM :: Bool -> Text -> AppMessage -> Maybe Text -> Widget
+infoEntryM False fId msg mText = maybe [whamlet||]                  (infoEntry False fId msg) mText
+infoEntryM True  fId msg mText = maybe (infoEntry True fId msg "")  (infoEntry True  fId msg) mText
+
+-- | Shows the given QuickMod information in a description list with the given label.
+infoEntry :: Bool -> Text -> AppMessage -> Text -> Widget
+infoEntry editable fId msg text = [whamlet|
+    <tr>
+        <th>_{msg}
+        <td :editable:.edit id=#{fId}>#{text}
+    |]
+
+-- }}}
 
 -- {{{ Add QuickMod
 
@@ -66,43 +180,11 @@ data QuickModForm =
 
 -- }}}
 
--- {{{ QuickMod Page
-
-requireQMPageInfo :: Text -> Handler QModPageInfo
-requireQMPageInfo uid = do
-    -- TODO: Do all of this in one DB transaction.
-    qmEnt <- requireQuickMod uid
-    let qm = entityVal qmEnt
-        qmId = entityKey qmEnt
-    authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
-    versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
-    return $ QModPageInfo qm authors versions
-
-data QModPageInfo = QModPageInfo
-    { qiMod     :: QuickMod
-    , qiAuthors :: [QmAuthor]
-    , qiVsns    :: [QmVersion]
-    }
-
-
--- | Shows the given QuickMod information in a description list with the given label if it exists.
-infoEntryM :: Bool -> Text -> AppMessage -> Maybe Text -> Widget
-infoEntryM False fId msg mText = maybe [whamlet||]                  (infoEntry False fId msg) mText
-infoEntryM True  fId msg mText = maybe (infoEntry True fId msg "")  (infoEntry True  fId msg) mText
-
--- | Shows the given QuickMod information in a description list with the given label.
-infoEntry :: Bool -> Text -> AppMessage -> Text -> Widget
-infoEntry editable fId msg text = [whamlet|
-    <tr>
-        <th>_{msg}
-        <td :editable:.edit id=#{fId}>#{text}
-    |]
-
+-- {{{ Misc utilities
 
 -- | Takes the given text and converts newlines into HTML <p> tags.
 linesToParagraphs :: Text -> Html
 linesToParagraphs = mapM_ (H.p . toHtml) . T.lines
-
 
 -- | Checks if the current user can edit the given QuickMod.
 canEdit :: QuickMod -> Handler Bool
@@ -111,52 +193,55 @@ canEdit qm = isJustT $ do
     guard (quickModOwner qm == usrId)
     return ()
 
+-- | Shows a permission denied page if the user can't edit the given QuickMod.
+requireCanEdit :: QuickMod -> Handler ()
+requireCanEdit qm = do
+    allowEdit <- canEdit qm
+    if allowEdit
+       then return ()
+       else permissionDeniedI MsgCantEdit
+
+-- }}}
+
+-- {{{ QuickMod page
+
+-- | Handler for the view QuickMod page.
 getQuickModPageR :: Text -> Handler Html
 getQuickModPageR uid = do
     info@(QModPageInfo qm authors versions) <- requireQMPageInfo uid
-    editing <- canEdit qm
-    let (iEntry, iEntryM) = (infoEntry editing, infoEntryM editing)
-    let description = linesToParagraphs $ quickModDesc qm
-    -- TODO: make the URLs actual links.
+    let infoFormData = formDataFromInfo info
+        description = linesToParagraphs $ quickModDesc qm
     defaultLayout $ do
-        $(combineScripts 'StaticR
-            [ js_jquery_jeditable_mini_js ])
         renderMsg <- getMessageRender
         setTitle $ toHtml $ renderMsg $ MsgModPageTitle $ quickModName qm
         $(widgetFile "quickmod-page")
 
+-- }}}
 
--- | Form data for QuickMod edits
-data QModEditFormData = QModEditFormData
-    { fieldId       :: Text
-    , fieldValue    :: Text
-    }
+-- {{{ QuickMod editor
 
-quickModEditForm :: FormInput Handler QModEditFormData
-quickModEditForm = QModEditFormData
-    <$> ireq textField "id"
-    <*> ireq textField "value"
+getQuickModEditR :: Text -> Handler Html
+getQuickModEditR uid = do
+    info@(QModPageInfo qm _ _) <- requireQMPageInfo uid
+    requireCanEdit qm
+    (wform, enctype) <- generateFormPost $ editForm $ Just $ formDataFromInfo info
+    defaultLayout $ do
+        [whamlet|
+            <form .uk-form .uk-form-horizontal action=@{QuickModEditR uid} enctype=#{enctype} method=post>
+                <fieldset>
+                    <legend>_{MsgInfoFormLegend}
+                    ^{wform}
+                <input type=submit value=_{MsgSaveBtn}>
+        |]
 
-postQuickModEditR :: Text -> Handler Text
+-- | Post handler for the edit page.
+postQuickModEditR :: Text -> Handler Html
 postQuickModEditR uid = do
     qmEnt <- requireQuickMod uid
     let qmId = entityKey qmEnt
         qm = entityVal qmEnt
-    allowEdit <- canEdit qm
-    if not allowEdit
-       then permissionDeniedI MsgCantEdit
-       else return ()
-    (QModEditFormData field value) <- runInputPost quickModEditForm
-    let updateQ = case field of
-         "name" ->              [QuickModName =. value]
-         "icon" ->              [QuickModIcon =. Just value]
-         "logo" ->              [QuickModLogo =. Just value]
-         "website" ->           [QuickModWebsite =. Just value]
-         "issuesUrl" ->         [QuickModIssuesUrl =. Just value]
-         "donationsUrl" ->      [QuickModDonationsUrl =. Just value]
-         _ ->           []
-    runDB $ update qmId updateQ
-    return ""
+    requireCanEdit qm
+    error "Unimplemented"
 
 -- }}}
 

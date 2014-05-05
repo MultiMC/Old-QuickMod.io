@@ -2,10 +2,12 @@
 
 
 # Mod page
+InfoFormLegend: Edit QuickMod Info
 CantEdit: You are not allowed to edit this QuickMod.
 ModPageTitle modName@Text: QuickMod Page for #{modName}
 ModInfoTable: Mod Information
 ModUidLabel: UID
+ModUidTooltip: An ID for the mod. This should be the same for all of this mod's QuickMod files.
 ModNameLabel: Mod Name
 ModCatsLabel: Categories
 ModTagsLabel: Tags
@@ -21,4 +23,5 @@ VsnUrlLabel: Download URL
 
 # General stuff
 SubmitBtn: Submit
+SaveBtn: Save
 

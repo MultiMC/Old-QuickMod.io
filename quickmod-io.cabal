@@ -26,6 +26,7 @@ library
                      Util.Navbar
                      Util.Text
                      Util.Error
+                     Util.Forms
                      Util.QuickMod
                      Data.QuickMod
                      Data.QuickMod.Persistent
