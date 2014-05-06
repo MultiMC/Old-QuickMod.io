@@ -200,6 +200,7 @@ requireCanEdit qm = do
 getQuickModPageR :: Text -> Handler Html
 getQuickModPageR uid = do
     info@(QModPageInfo qm _ authors versions) <- requireQMPageInfo uid
+    editable <- canEdit qm
     let infoFormData = formData info
         description = linesToParagraphs $ quickModDesc qm
     defaultLayout $ do

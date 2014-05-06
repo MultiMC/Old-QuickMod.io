@@ -1,4 +1,11 @@
-<h1 #name>#{quickModName qm}
+$if editable
+  <div .uk-clearfix>
+    <div .uk-float-left>
+      <h1 #name>#{quickModName qm}
+    <div .uk-float-right>
+      <a .uk-button .uk-button-large .uk-button-primary href=@{QuickModEditR uid}>_{MsgEditQuickMod}
+$else
+  <h1 #name>#{quickModName qm}
 
 <div .uk-grid>
   <div .uk-width-1-3>
