@@ -17,3 +17,6 @@
 
 /mods ListQuickModsR GET
 
+/mod/#Text/add-version      AddVersionR     GET POST
+/mod/#Text/v/#Text/edit     EditVersionR    GET POST
+

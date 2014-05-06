@@ -25,6 +25,11 @@ $else
             <th>_{MsgVsnNameLabel}
             <th>_{MsgVsnTypeLabel}
             <th>_{MsgVsnUrlLabel}
+            $if editable
+              <td .button-col>
+                <a .uk-button .uk-button-primary .uk-button-small href=@{AddVersionR uid}>
+                  <i .uk-icon-plus>
+            $else
         <tbody>
           $forall vsn <- versions
             <tr>
@@ -36,9 +41,15 @@ $else
                 <td>N/A
 
               $maybe url <- qmVersionUrl vsn
-                <td><a href=#{url}>#{url}</a>
+                <td>
+                  <a href=#{url}>#{url}</a>
               $nothing
                 <td>N/A
+
+              $if editable
+                <td>
+                  <a .uk-button .uk-button-small href=@{EditVersionR uid (qmVersionName vsn)}>
+                    <i .uk-icon-edit>
 
 <div .uk-grid>
   <div .uk-width-1-1>

@@ -24,6 +24,7 @@ library
                      Handler.QuickModFile
                      Handler.ManageQuickMods
                      Handler.ListQuickMods
+                     Handler.EditVersion
                      Util.Navbar
                      Util.Text
                      Util.Error

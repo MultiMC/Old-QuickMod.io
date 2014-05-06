@@ -1,3 +1,3 @@
-.edit:hover
-  background-color: #F3F3F3
+.button-col
+  width: 42px;
 
