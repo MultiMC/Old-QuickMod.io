@@ -19,7 +19,7 @@ $else
 
   <div .uk-width-2-3>
     <div .uk-panel>
-      <table .uk-table .uk-table.striped .uk-table-hover>
+      <table .uk-table .uk-table-striped .uk-table-hover>
         <thead>
           <tr>
             <th>_{MsgVsnNameLabel}
