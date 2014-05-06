@@ -3,7 +3,8 @@
     <a href=@{HomeR} .uk-navbar-brand>QuickMod.io
     <div>
       <ul .uk-navbar-nav>
-        ^{navEntry (SomeMessage MsgNavNewQuickMod) (SomeMessage MsgNavSubNewQuickMod) AddQuickModR}
+        ^{navEntry (SomeMessage MsgNavBrowse)   (SomeMessage MsgNavSubBrowse)   ListQuickModsR}
+        ^{navEntry (SomeMessage MsgNavNew)      (SomeMessage MsgNavSubNew)      AddQuickModR}
     <div .uk-navbar-flip>
       <ul .uk-navbar-nav>
         $maybe _ <- mAuth

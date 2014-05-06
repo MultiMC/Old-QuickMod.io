@@ -2,8 +2,10 @@
 
 
 # Navbar
-NavNewQuickMod: New QuickMod
-NavSubNewQuickMod: Create a new QuickMod
+NavNew: New QuickMod
+NavSubNew: Create a new QuickMod
+NavBrowse: Browse
+NavSubBrowse: Browse QuickMods
 NavLogin: Log In
 NavSubLogin: Log in to your account
 NavLogout: Log Out
