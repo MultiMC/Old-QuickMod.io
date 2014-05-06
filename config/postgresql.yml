@@ -11,10 +11,12 @@ Development:
 
 Testing:
   database: quickmod-io_test
+  user: quickmod-io_test
   <<: *defaults
 
 Staging:
   database: quickmod-io_staging
+  user: quickmod-io_staging
   poolsize: 100
   <<: *defaults
 
