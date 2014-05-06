@@ -23,6 +23,7 @@ library
                      Handler.Home
                      Handler.QuickModFile
                      Handler.ManageQuickMods
+                     Handler.ListQuickMods
                      Util.Navbar
                      Util.Text
                      Util.Error

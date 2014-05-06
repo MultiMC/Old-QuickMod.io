@@ -15,3 +15,5 @@
 /mod/#Text      QuickModPageR   GET
 /mod/#Text/edit QuickModEditR   GET POST
 
+/mods ListQuickModsR GET
+

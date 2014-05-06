@@ -10,6 +10,11 @@ NavLogout: Log Out
 NavSubLogout: Log out of your account
 
 
+# QuickMod list
+ModListUid: UID
+ModListName: Name
+
+
 # Mod page
 InfoFormLegend: Edit QuickMod Info
 AddFormLegend: New QuickMod

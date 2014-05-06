@@ -1,0 +1,12 @@
+<table .uk-table .uk-table-striped .uk-table-hover>
+  <thead>
+    <tr>
+      <th>_{MsgModListUid}
+      <th>_{MsgModListName}
+  <tbody>
+    $forall (Entity {entityVal = mod}) <- mods
+      <tr>
+        <td>
+          <a href=@{QuickModPageR $ quickModUid mod}>#{quickModUid mod}
+        <td>#{quickModName mod}
+
