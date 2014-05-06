@@ -19,39 +19,32 @@ import Yesod.Form.Input
 -- | A table for displaying QuickMod info
 infoTable :: QInfoFormData -> Widget
 infoTable qm = [whamlet|
-    ^{iEntry  "uid"           MsgModUidLabel $            qifUid qm}
-    ^{iEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
-    ^{iEntryM "website"       MsgModWebsiteLabel $        qifWebsite qm}
-    ^{iEntryM "issuesUrl"     MsgModIssuesUrlLabel $      qifIssuesUrl qm}
-    ^{iEntryM "donationsUrl"  MsgModDonationsUrlLabel $   qifDonationsUrl qm}
-    ^{iEntry  "categories"    MsgModCatsLabel $           qifCats qm}
-    ^{iEntry  "tags"          MsgModTagsLabel $           qifTags qm}
+    ^{tEntry  "uid"           MsgModUidLabel $            qifUid qm}
+    ^{tEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
+    ^{uEntryM "website"       MsgModWebsiteLabel $        qifWebsite qm}
+    ^{uEntryM "issuesUrl"     MsgModIssuesUrlLabel $      qifIssuesUrl qm}
+    ^{uEntryM "donationsUrl"  MsgModDonationsUrlLabel $   qifDonationsUrl qm}
+    ^{tEntry  "categories"    MsgModCatsLabel $           qifCats qm}
+    ^{tEntry  "tags"          MsgModTagsLabel $           qifTags qm}
     |]
   where
-    iEntry = infoEntry False
-    iEntryM = infoEntryM False
+    tEntry = textEntry
+    tEntryM = entryM textEntry
+    uEntryM = entryM urlEntry
 
 -- | A form for editing QuickMod info.
 editForm :: Maybe QInfoFormData -> Form QInfoFormData
-editForm formData = do
-    let defUid          = qifUid <$> formData
-        defName         = qifName <$> formData
-        defWebsite      = qifWebsite <$> formData
-        defIssuesUrl    = qifIssuesUrl <$> formData
-        defDonationsUrl = qifDonationsUrl <$> formData
-        defAuthors      = qifAuthors <$> formData
-        defCats         = qifCats <$> formData
-        defTags         = qifTags <$> formData
-    renderDivsUk $ QInfoFormData
-        <$> areq textField      (fsl MsgModUidLabel           $ Just MsgModUidTooltip)      defUid
-        <*> areq textField      (fsl MsgModNameLabel          $ Nothing)                    defName
-        <*> aopt urlField       (fsl MsgModWebsiteLabel       $ Nothing)                    defWebsite
-        <*> aopt urlField       (fsl MsgModIssuesUrlLabel     $ Nothing)                    defIssuesUrl
-        <*> aopt urlField       (fsl MsgModDonationsUrlLabel  $ Nothing)                    defDonationsUrl
-        <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    defAuthors  -- TODO: List fields
-        <*> areq textField      (fsl MsgModCatsLabel          $ Nothing)                    defCats
-        <*> areq textField      (fsl MsgModTagsLabel          $ Nothing)                    defTags
+editForm fData = renderDivsUk $ QInfoFormData
+    <$> areq textField      (fsl MsgModUidLabel           $ Just MsgModUidTooltip)      (qifUid <$> fData)
+    <*> areq textField      (fsl MsgModNameLabel          $ Nothing)                    (qifName <$> fData)
+    <*> aopt urlField       (fsl MsgModWebsiteLabel       $ Nothing)                    (qifWebsite <$> fData)
+    <*> aopt urlField       (fsl MsgModIssuesUrlLabel     $ Nothing)                    (qifIssuesUrl <$> fData)
+    <*> aopt urlField       (fsl MsgModDonationsUrlLabel  $ Nothing)                    (qifDonationsUrl <$> fData)
+    <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    (qifAuthors <$> fData) -- TODO: List fields
+    <*> areq textField      (fsl MsgModCatsLabel          $ Nothing)                    (qifCats <$> fData)
+    <*> areq textField      (fsl MsgModTagsLabel          $ Nothing)                    (qifTags <$> fData)
   where
+    -- Generates field settings.
     fsl :: AppMessage -> Maybe AppMessage -> FieldSettings App
     fsl msg tt = FieldSettings
         { fsLabel = SomeMessage msg
@@ -73,8 +66,9 @@ data QInfoFormData = QInfoFormData
     , qifTags           :: Text
     }
 
-formDataFromInfo :: QModPageInfo -> QInfoFormData
-formDataFromInfo (QModPageInfo qm _ authors _) = QInfoFormData
+-- | Constructs a QInfoFormData object from the given QModPageInfo
+formData :: QModPageInfo -> QInfoFormData
+formData (QModPageInfo qm _ authors _) = QInfoFormData
     { qifUid = quickModUid qm
     , qifName = quickModName qm
     , qifWebsite = quickModWebsite qm
@@ -85,22 +79,46 @@ formDataFromInfo (QModPageInfo qm _ authors _) = QInfoFormData
     , qifCats = joinWith' ", " $ quickModCategories qm
     }
 
-collapseMaybe :: Maybe (Maybe a) -> Maybe a
-collapseMaybe val = val ?: Nothing
+-- }}}
+
+-- {{{ Fields
+
+type EntryField a = Text -> AppMessage -> a -> Widget
+
+-- | Shows the given QuickMod information in a description list with the given label if it exists.
+entryM :: EntryField a -> Text -> AppMessage -> Maybe a -> Widget
+entryM f fId msg mVal = maybe [whamlet||] (f fId msg) mVal
+
+-- | Shows the given QuickMod information in a description list with the given label.
+textEntry :: Text -> AppMessage -> Text -> Widget
+textEntry fId msg text = [whamlet|
+    <tr>
+        <th>_{msg}
+        <td id=#{fId}>#{text}
+    |]
+
+-- | Shows the given URL in a description list with the given label.
+urlEntry :: Text -> AppMessage -> Text -> Widget
+urlEntry fId msg text = [whamlet|
+    <tr>
+        <th>_{msg}
+        <td id=#{fId}>
+            <a href=#{text}>#{text}
+    |]
 
 -- }}}
 
 -- {{{ Page info
 
+-- | Gets a QModPageInfo object for the given uid or 404s if there is no such QuickMod.
 requireQMPageInfo :: Text -> Handler QModPageInfo
-requireQMPageInfo uid = do
-    -- TODO: Do all of this in one DB transaction.
-    qmEnt <- requireQuickMod uid
-    let qm = entityVal qmEnt
-        qmId = entityKey qmEnt
-    authors <- runDB $ map entityVal <$> selectList [QmAuthorMod ==. qmId] []
-    versions <- runDB $ map entityVal <$> selectList [QmVersionMod ==. qmId] []
-    return $ QModPageInfo qm qmId authors versions
+requireQMPageInfo uid = runDB $ do
+        qmEnt <- requireQuickModDB uid
+        let qm = entityVal qmEnt
+            qmId = entityKey qmEnt
+        authors  <- map entityVal <$> selectList [QmAuthorMod ==. qmId] []
+        versions <- map entityVal <$> selectList [QmVersionMod ==. qmId] []
+        return $ QModPageInfo qm qmId authors versions
 
 data QModPageInfo = QModPageInfo
     { qiMod     :: QuickMod
@@ -108,23 +126,6 @@ data QModPageInfo = QModPageInfo
     , qiAuthors :: [QmAuthor]
     , qiVsns    :: [QmVersion]
     }
-
--- }}}
-
--- {{{ Page stuff
-
--- | Shows the given QuickMod information in a description list with the given label if it exists.
-infoEntryM :: Bool -> Text -> AppMessage -> Maybe Text -> Widget
-infoEntryM False fId msg mText = maybe [whamlet||]                  (infoEntry False fId msg) mText
-infoEntryM True  fId msg mText = maybe (infoEntry True fId msg "")  (infoEntry True  fId msg) mText
-
--- | Shows the given QuickMod information in a description list with the given label.
-infoEntry :: Bool -> Text -> AppMessage -> Text -> Widget
-infoEntry editable fId msg text = [whamlet|
-    <tr>
-        <th>_{msg}
-        <td :editable:.edit id=#{fId}>#{text}
-    |]
 
 -- }}}
 
@@ -199,7 +200,7 @@ requireCanEdit qm = do
 getQuickModPageR :: Text -> Handler Html
 getQuickModPageR uid = do
     info@(QModPageInfo qm _ authors versions) <- requireQMPageInfo uid
-    let infoFormData = formDataFromInfo info
+    let infoFormData = formData info
         description = linesToParagraphs $ quickModDesc qm
     defaultLayout $ do
         renderMsg <- getMessageRender
@@ -210,27 +211,29 @@ getQuickModPageR uid = do
 
 -- {{{ QuickMod editor
 
+-- | Renders QuickMod edit widget.
+quickModEditWidget :: Text -> QModPageInfo -> Widget -> Enctype -> Widget
+quickModEditWidget uid (QModPageInfo qm _ _ _) wform enctype = do
+    renderMsg <- getMessageRender
+    setTitle $ toHtml $ renderMsg $ MsgEditModPageTitle $ quickModName qm
+    $(widgetFile "quickmod-edit")
+
 getQuickModEditR :: Text -> Handler Html
 getQuickModEditR uid = do
     info@(QModPageInfo qm _ _ _) <- requireQMPageInfo uid
     requireCanEdit qm
-    (wform, enctype) <- generateFormPost $ editForm $ Just $ formDataFromInfo info
-    defaultLayout $ do
-        renderMsg <- getMessageRender
-        setTitle $ toHtml $ renderMsg $ MsgEditModPageTitle $ quickModName qm
-        $(widgetFile "quickmod-edit")
+    (wform, enctype) <- generateFormPost $ editForm $ Just $ formData info
+    defaultLayout $ quickModEditWidget uid info wform enctype
 
 -- | Post handler for the edit page.
 postQuickModEditR :: Text -> Handler Html
 postQuickModEditR uid = do
     info@(QModPageInfo qm qmId _ _) <- requireQMPageInfo uid
     requireCanEdit qm
-    ((result, wform), enctype) <- runFormPost $ editForm $ Just $ formDataFromInfo info
+    ((result, wform), enctype) <- runFormPost $ editForm $ Just $ formData info
     case result of
-         FormMissing -> error "Form missing"
-         FormFailure err ->
-             defaultLayout $ do
-                 $(widgetFile "quickmod-edit")
+         FormMissing -> invalidArgs ["Form missing"]
+         FormFailure _ -> defaultLayout $ quickModEditWidget uid info wform enctype
          FormSuccess form -> do
              runDB $ update qmId
                 [ QuickModUid =. qifUid form
