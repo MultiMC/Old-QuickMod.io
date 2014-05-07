@@ -77,13 +77,26 @@ getAddVersionR uid = do
 
 postAddVersionR :: Text -> Handler Html
 postAddVersionR uid = do
-    qm <- entityVal <$> requireEditableQuickMod uid
+    qmId <- entityKey <$> requireEditableQuickMod uid
     ((result, wform), enctype) <- runFormPost $ versionEditForm $ Nothing
     case result of
          FormMissing -> error "Form missing"
          FormFailure errs -> defaultLayout $ addVsnFormWidget uid (wform, enctype)
-         FormSuccess vif ->
-             error "Not implemented"
+         FormSuccess vif -> do
+             let vsn = QmVersion {
+                   qmVersionName = vifName vif
+                 , qmVersionMod = qmId
+                 , qmVersionType = vifType vif
+                 , qmVersionMcCompat = []
+                 , qmVersionForgeCompat = Nothing
+                 , qmVersionDlType = Just $ vifDlType vif
+                 , qmVersionInstallType = Just $ vifInstallType vif
+                 , qmVersionMd5 = Nothing -- TODO: MD5 support
+                 , qmVersionUrl = vifUrl vif
+                 }
+             -- FIXME: Trying to add a duplicate gives a really ugly error message.
+             runDB $ insert_ vsn
+             redirect $ QuickModPageR uid
 
 -- }}}
 
