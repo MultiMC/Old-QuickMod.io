@@ -68,6 +68,9 @@ VsnFCoreModInst: Forge Core Mod
 VsnConfigPackInst: Config Pack
 VsnGroupModInst: Group Mod (For mod packs)
 
+VersionUpdated: The version has been updated successfully.
+
+
 # General stuff
 SubmitBtn: Submit
 SaveBtn: Save

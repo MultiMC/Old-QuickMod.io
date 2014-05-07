@@ -181,6 +181,7 @@ getQuickModPageR uid = do
     editable <- canEditMod qm
     let infoFormData = formData info
         description = linesToParagraphs $ quickModDesc qm
+    -- TODO: Sort the version list.
     defaultLayout $ do
         renderMsg <- getMessageRender
         setTitle $ toHtml $ renderMsg $ MsgModPageTitle $ quickModName qm

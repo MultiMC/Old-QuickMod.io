@@ -123,13 +123,24 @@ getEditVersionR uid vname = do
 
 postEditVersionR :: Text -> Text -> Handler Html
 postEditVersionR uid vname = do
-    vsn <- entityVal <$> requireEditableQmVsn uid vname
+    vsnEnt <- requireEditableQmVsn uid vname
+    let vsn = entityVal vsnEnt
+        vsnId = entityKey vsnEnt
     ((result, wform), enctype) <- runFormPost $ versionEditForm $ Just $ vsnFormInfo vsn
     case result of
          FormMissing -> error "Form missing"
          FormFailure errs -> defaultLayout $ editVsnFormWidget uid vname (wform, enctype)
-         FormSuccess vif ->
-             error "Not implemented"
+         FormSuccess vif -> do
+             runDB $ update vsnId
+                [ QmVersionName =. vifName vif
+                , QmVersionType =. vifType vif
+                , QmVersionDlType =. (Just $ vifDlType vif)
+                , QmVersionInstallType =. (Just $ vifInstallType vif)
+                , QmVersionUrl =. vifUrl vif
+                ]
+             renderMsg <- getMessageRender
+             setMessage $ toHtml $ renderMsg $ MsgVersionUpdated
+             redirect $ QuickModPageR uid
 
 -- }}}
 
