@@ -58,6 +58,7 @@ QmVersion
     installType     InstallType  Maybe
     md5             Text Maybe
     url             Text Maybe
+    UniqueVsnName mod name
     deriving Typeable Show
 
 -- Data structure for version references.

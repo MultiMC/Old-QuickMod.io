@@ -33,26 +33,19 @@ infoTable qm = [whamlet|
     uEntryM = entryM urlEntry
 
 -- | A form for editing QuickMod info.
-editForm :: Maybe QInfoFormData -> Form QInfoFormData
-editForm fData = renderDivsUk $ QInfoFormData
-    <$> areq textField      (fsl MsgModUidLabel           $ Just MsgModUidTooltip)      (qifUid <$> fData)
-    <*> areq textField      (fsl MsgModNameLabel          $ Nothing)                    (qifName <$> fData)
-    <*> aopt urlField       (fsl MsgModWebsiteLabel       $ Nothing)                    (qifWebsite <$> fData)
-    <*> aopt urlField       (fsl MsgModIssuesUrlLabel     $ Nothing)                    (qifIssuesUrl <$> fData)
-    <*> aopt urlField       (fsl MsgModDonationsUrlLabel  $ Nothing)                    (qifDonationsUrl <$> fData)
-    <*> areq textField      (fsl MsgModAuthorsLabel       $ Nothing)                    (qifAuthors <$> fData) -- TODO: List fields
-    <*> areq textField      (fsl MsgModCatsLabel          $ Nothing)                    (qifCats <$> fData)
-    <*> areq textField      (fsl MsgModTagsLabel          $ Nothing)                    (qifTags <$> fData)
+modEditForm :: Maybe QInfoFormData -> Form QInfoFormData
+modEditForm fData = renderDivsUk $ QInfoFormData
+    <$> areq textField  (fs "uid"       MsgModUidLabel          $ Just MsgModUidTip)        (qifUid <$> fData)
+    <*> areq textField  (fs "name"      MsgModNameLabel         $ Just MsgModNameTip)       (qifName <$> fData)
+    <*> aopt urlField   (fs "website"   MsgModWebsiteLabel      $ Just MsgModWebsiteTip)    (qifWebsite <$> fData)
+    <*> aopt urlField   (fs "issueUrl"  MsgModIssuesUrlLabel    $ Nothing)                  (qifIssuesUrl <$> fData)
+    <*> aopt urlField   (fs "donateUrl" MsgModDonationsUrlLabel $ Nothing)                  (qifDonationsUrl <$> fData)
+    <*> areq textField  (fs "authors"   MsgModAuthorsLabel      $ Just MsgModAuthorsTip)    (qifAuthors <$> fData) -- TODO: List fields
+    <*> areq textField  (fs "cats"      MsgModCatsLabel         $ Just MsgModCatsTip)       (qifCats <$> fData)
+    <*> areq textField  (fs "tags"      MsgModTagsLabel         $ Just MsgModTagsTip)       (qifTags <$> fData)
   where
-    -- Generates field settings.
-    fsl :: AppMessage -> Maybe AppMessage -> FieldSettings App
-    fsl msg tt = FieldSettings
-        { fsLabel = SomeMessage msg
-        , fsTooltip = SomeMessage <$> tt
-        , fsId = Nothing
-        , fsName = Nothing
-        , fsAttrs = [("class", "uk-form-width-large")]
-        }
+    fs :: Text -> AppMessage -> Maybe AppMessage -> FieldSettings App
+    fs fid label tooltip = fieldS fid (SomeMessage label) (SomeMessage <$> tooltip)
 
 -- | Data type for holding QuickMod info for the table.
 data QInfoFormData = QInfoFormData
@@ -133,13 +126,13 @@ data QModPageInfo = QModPageInfo
 
 getAddQuickModR :: Handler Html
 getAddQuickModR = do
-    (wform, enctype) <- generateFormPost $ editForm $ Nothing
+    (wform, enctype) <- generateFormPost $ modEditForm $ Nothing
     defaultLayout $ addModFormWidget wform enctype []
 
 postAddQuickModR :: Handler Html
 postAddQuickModR = do
     userId <- requireAuthId
-    ((result, wform), enctype) <- runFormPost $ editForm $ Nothing
+    ((result, wform), enctype) <- runFormPost $ modEditForm $ Nothing
     case result of
          FormMissing -> error "Form missing"
          FormFailure errs -> defaultLayout $ addModFormWidget wform enctype errs
@@ -177,21 +170,6 @@ addModFormWidget wform enctype errs = [whamlet|
 linesToParagraphs :: Text -> Html
 linesToParagraphs = mapM_ (H.p . toHtml) . T.lines
 
--- | Checks if the current user can edit the given QuickMod.
-canEdit :: QuickMod -> Handler Bool
-canEdit qm = isJustT $ do
-    usrId <- hoistMaybeT $ maybeAuthId
-    guard (quickModOwner qm == usrId)
-    return ()
-
--- | Shows a permission denied page if the user can't edit the given QuickMod.
-requireCanEdit :: QuickMod -> Handler ()
-requireCanEdit qm = do
-    allowEdit <- canEdit qm
-    if allowEdit
-       then return ()
-       else permissionDeniedI MsgCantEdit
-
 -- }}}
 
 -- {{{ QuickMod page
@@ -200,7 +178,7 @@ requireCanEdit qm = do
 getQuickModPageR :: Text -> Handler Html
 getQuickModPageR uid = do
     info@(QModPageInfo qm _ authors versions) <- requireQMPageInfo uid
-    editable <- canEdit qm
+    editable <- canEditMod qm
     let infoFormData = formData info
         description = linesToParagraphs $ quickModDesc qm
     defaultLayout $ do
@@ -222,16 +200,16 @@ quickModEditWidget uid (QModPageInfo qm _ _ _) wform enctype = do
 getQuickModEditR :: Text -> Handler Html
 getQuickModEditR uid = do
     info@(QModPageInfo qm _ _ _) <- requireQMPageInfo uid
-    requireCanEdit qm
-    (wform, enctype) <- generateFormPost $ editForm $ Just $ formData info
+    requireCanEditMod qm
+    (wform, enctype) <- generateFormPost $ modEditForm $ Just $ formData info
     defaultLayout $ quickModEditWidget uid info wform enctype
 
 -- | Post handler for the edit page.
 postQuickModEditR :: Text -> Handler Html
 postQuickModEditR uid = do
     info@(QModPageInfo qm qmId _ _) <- requireQMPageInfo uid
-    requireCanEdit qm
-    ((result, wform), enctype) <- runFormPost $ editForm $ Just $ formData info
+    requireCanEditMod qm
+    ((result, wform), enctype) <- runFormPost $ modEditForm $ Just $ formData info
     case result of
          FormMissing -> invalidArgs ["Form missing"]
          FormFailure _ -> defaultLayout $ quickModEditWidget uid info wform enctype

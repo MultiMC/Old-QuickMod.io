@@ -3,8 +3,13 @@ module Util.Forms where
 
 import Prelude
 import Control.Monad
+import qualified Data.Text as T
 import Yesod
+import Yesod.Form
+import Yesod.Form.Input
 import Yesod.Form.Functions
+
+-- {{{ Render functions
 
 renderDivsUk :: Monad m => FormRender m a
 renderDivsUk aform fragment = do
@@ -24,4 +29,18 @@ $forall view <- views
                 <div .uk-form-help-block>#{err}
 |]
     return (res, widget)
+
+-- }}}
+
+-- {{{ Field settings stuff
+
+-- Generates field settings.
+fieldS :: (Yesod app) => T.Text -> SomeMessage app -> Maybe (SomeMessage app) -> FieldSettings app
+fieldS fid label tt = FieldSettings
+    { fsLabel = label
+    , fsTooltip = tt
+    , fsId = Just fid
+    , fsName = Just fid
+    , fsAttrs = [("class", "uk-form-width-large")]
+    }
 

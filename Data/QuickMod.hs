@@ -153,13 +153,13 @@ instance ToJSON Version where
 
 -- {{{ Download & install types
 
-data DownloadType = DirectDL | ParallelDL | SequentialDL deriving (Show, Read)
+data DownloadType = DirectDL | ParallelDL | SequentialDL deriving (Show, Read, Eq)
 instance ToJSON DownloadType where
     toJSON DirectDL     = String "direct"
     toJSON ParallelDL   = String "parallel"
     toJSON SequentialDL = String "sequential"
 
-data InstallType = ForgeMod | ForgeCoreMod | ExtractMod | ConfigPack | GroupMod deriving (Show, Read)
+data InstallType = ForgeMod | ForgeCoreMod | ExtractMod | ConfigPack | GroupMod deriving (Show, Read, Eq)
 instance ToJSON InstallType where
     toJSON ForgeMod     = String "forgeMod"
     toJSON ForgeCoreMod = String "forgeCoreMod"
