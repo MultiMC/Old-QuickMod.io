@@ -21,25 +21,18 @@ infoTable :: QInfoFormData -> Widget
 infoTable qm = [whamlet|
     ^{tEntry  "uid"           MsgModUidLabel $            qifUid qm}
     ^{tEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
-    ^{uEntryM "website"       MsgModWebsiteLabel $        qifWebsite qm}
-    ^{uEntryM "issuesUrl"     MsgModIssuesUrlLabel $      qifIssuesUrl qm}
-    ^{uEntryM "donationsUrl"  MsgModDonationsUrlLabel $   qifDonationsUrl qm}
     ^{tEntry  "categories"    MsgModCatsLabel $           qifCats qm}
     ^{tEntry  "tags"          MsgModTagsLabel $           qifTags qm}
     |]
   where
     tEntry = textEntry
     tEntryM = entryM textEntry
-    uEntryM = entryM urlEntry
 
 -- | A form for editing QuickMod info.
 modEditForm :: Maybe QInfoFormData -> Form QInfoFormData
 modEditForm fData = renderDivsUk $ QInfoFormData
     <$> areq textField  (fs "uid"       MsgModUidLabel          $ Just MsgModUidTip)        (qifUid <$> fData)
     <*> areq textField  (fs "name"      MsgModNameLabel         $ Just MsgModNameTip)       (qifName <$> fData)
-    <*> aopt urlField   (fs "website"   MsgModWebsiteLabel      $ Just MsgModWebsiteTip)    (qifWebsite <$> fData)
-    <*> aopt urlField   (fs "issueUrl"  MsgModIssuesUrlLabel    $ Nothing)                  (qifIssuesUrl <$> fData)
-    <*> aopt urlField   (fs "donateUrl" MsgModDonationsUrlLabel $ Nothing)                  (qifDonationsUrl <$> fData)
     <*> areq textField  (fs "authors"   MsgModAuthorsLabel      $ Just MsgModAuthorsTip)    (qifAuthors <$> fData) -- TODO: List fields
     <*> areq textField  (fs "cats"      MsgModCatsLabel         $ Just MsgModCatsTip)       (qifCats <$> fData)
     <*> areq textField  (fs "tags"      MsgModTagsLabel         $ Just MsgModTagsTip)       (qifTags <$> fData)
@@ -51,9 +44,6 @@ modEditForm fData = renderDivsUk $ QInfoFormData
 data QInfoFormData = QInfoFormData
     { qifUid            :: Text
     , qifName           :: Text
-    , qifWebsite        :: Maybe Text
-    , qifIssuesUrl      :: Maybe Text
-    , qifDonationsUrl   :: Maybe Text
     , qifAuthors        :: Text -- TODO: Make this a list somehow. Will need to define new form fields.
     , qifCats           :: Text -- ~meow
     , qifTags           :: Text
@@ -64,9 +54,6 @@ formData :: QModPageInfo -> QInfoFormData
 formData (QModPageInfo qm _ authors _) = QInfoFormData
     { qifUid = quickModUid qm
     , qifName = quickModName qm
-    , qifWebsite = quickModWebsite qm
-    , qifIssuesUrl = quickModIssuesUrl qm
-    , qifDonationsUrl = quickModDonationsUrl qm
     , qifAuthors = joinWith' ", " $ map qmAuthorName $ authors
     , qifTags = joinWith' ", " $ quickModTags qm
     , qifCats = joinWith' ", " $ quickModCategories qm
@@ -142,11 +129,6 @@ postAddQuickModR = do
                 , quickModName = qifName qif
                 , quickModOwner = userId
                 , quickModDesc = ""
-                , quickModIcon = Nothing
-                , quickModLogo = Nothing
-                , quickModWebsite = qifWebsite qif
-                , quickModIssuesUrl = qifIssuesUrl qif
-                , quickModDonationsUrl = qifDonationsUrl qif
                 , quickModTags = []
                 , quickModCategories = []
                 }
@@ -218,9 +200,6 @@ postQuickModEditR uid = do
              runDB $ update qmId
                 [ QuickModUid =. qifUid form
                 , QuickModName =. qifName form
-                , QuickModWebsite =. qifWebsite form
-                , QuickModIssuesUrl =. qifIssuesUrl form
-                , QuickModDonationsUrl =. qifDonationsUrl form
                 ]
              renderMsg <- getMessageRender
              setMessage $ toHtml $ renderMsg $ MsgQuickModUpdated

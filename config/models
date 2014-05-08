@@ -22,11 +22,6 @@ QuickMod
     owner           UserId
     name            Text
     desc            Text
-    icon            Text Maybe
-    logo            Text Maybe
-    website         Text Maybe
-    issuesUrl       Text Maybe
-    donationsUrl    Text Maybe
     tags            [Text]
     categories      [Text]
     UniqueUid uid
@@ -37,6 +32,14 @@ QmAuthor
     mod     QuickModId
     name    Text
     roles   [Text]
+    deriving Typeable Show
+
+-- Data structure for the QuickMod URL array.
+QmModUrl
+    mod     QuickModId
+    type    Text
+    name    Text
+    url     Text
     deriving Typeable Show
 
 -- Data structure for QuickMod references.
