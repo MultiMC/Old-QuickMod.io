@@ -8,7 +8,6 @@ import Data.String
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Default
-import qualified Data.Vector as V
 
 -- This might change in the future.
 type QMUrl = T.Text
