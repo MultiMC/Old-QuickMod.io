@@ -20,22 +20,23 @@ import Yesod.Form.Input
 infoTable :: QInfoFormData -> Widget
 infoTable qm = [whamlet|
     ^{tEntry  "uid"           MsgModUidLabel $            qifUid qm}
-    ^{tEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
-    ^{tEntry  "categories"    MsgModCatsLabel $           qifCats qm}
-    ^{tEntry  "tags"          MsgModTagsLabel $           qifTags qm}
+    ^{lEntry  "authors"       MsgModAuthorsLabel $        qifAuthors qm}
+    ^{lEntry  "categories"    MsgModCatsLabel $           qifCats qm}
+    ^{lEntry  "tags"          MsgModTagsLabel $           qifTags qm}
     |]
   where
     tEntry = textEntry
     tEntryM = entryM textEntry
+    lEntry = listEntry
 
 -- | A form for editing QuickMod info.
 modEditForm :: Maybe QInfoFormData -> Form QInfoFormData
 modEditForm fData = renderDivsUk $ QInfoFormData
     <$> areq textField  (fs "uid"       MsgModUidLabel          $ Just MsgModUidTip)        (qifUid <$> fData)
     <*> areq textField  (fs "name"      MsgModNameLabel         $ Just MsgModNameTip)       (qifName <$> fData)
-    <*> areq textField  (fs "authors"   MsgModAuthorsLabel      $ Just MsgModAuthorsTip)    (qifAuthors <$> fData) -- TODO: List fields
-    <*> areq textField  (fs "cats"      MsgModCatsLabel         $ Just MsgModCatsTip)       (qifCats <$> fData)
-    <*> areq textField  (fs "tags"      MsgModTagsLabel         $ Just MsgModTagsTip)       (qifTags <$> fData)
+    <*> areq listField  (fs "authors"   MsgModAuthorsLabel      $ Just MsgModAuthorsTip)    (qifAuthors <$> fData) -- TODO: List fields
+    <*> areq listField  (fs "cats"      MsgModCatsLabel         $ Just MsgModCatsTip)       (qifCats <$> fData)
+    <*> areq listField  (fs "tags"      MsgModTagsLabel         $ Just MsgModTagsTip)       (qifTags <$> fData)
   where
     fs :: Text -> AppMessage -> Maybe AppMessage -> FieldSettings App
     fs fid label tooltip = fieldS fid (SomeMessage label) (SomeMessage <$> tooltip)
@@ -44,9 +45,9 @@ modEditForm fData = renderDivsUk $ QInfoFormData
 data QInfoFormData = QInfoFormData
     { qifUid            :: Text
     , qifName           :: Text
-    , qifAuthors        :: Text -- TODO: Make this a list somehow. Will need to define new form fields.
-    , qifCats           :: Text -- ~meow
-    , qifTags           :: Text
+    , qifAuthors        :: [Text]
+    , qifCats           :: [Text] -- ~meow
+    , qifTags           :: [Text]
     }
 
 -- | Constructs a QInfoFormData object from the given QModPageInfo
@@ -54,14 +55,14 @@ formData :: QModPageInfo -> QInfoFormData
 formData (QModPageInfo qm _ authors _) = QInfoFormData
     { qifUid = quickModUid qm
     , qifName = quickModName qm
-    , qifAuthors = joinWith' ", " $ map qmAuthorName $ authors
-    , qifTags = joinWith' ", " $ quickModTags qm
-    , qifCats = joinWith' ", " $ quickModCategories qm
+    , qifAuthors = map qmAuthorName $ authors
+    , qifTags = quickModTags qm
+    , qifCats = quickModCategories qm
     }
 
 -- }}}
 
--- {{{ Fields
+-- {{{ Info entries
 
 type EntryField a = Text -> AppMessage -> a -> Widget
 
@@ -76,6 +77,10 @@ textEntry fId msg text = [whamlet|
         <th>_{msg}
         <td id=#{fId}>#{text}
     |]
+
+-- | Shows a comma separated list in a textEntry.
+listEntry :: Text -> AppMessage -> [Text] -> Widget
+listEntry fId msg = textEntry fId msg . T.intercalate ", "
 
 -- | Shows the given URL in a description list with the given label.
 urlEntry :: Text -> AppMessage -> Text -> Widget
@@ -109,43 +114,6 @@ data QModPageInfo = QModPageInfo
 
 -- }}}
 
--- {{{ Add QuickMod
-
-getAddQuickModR :: Handler Html
-getAddQuickModR = do
-    (wform, enctype) <- generateFormPost $ modEditForm $ Nothing
-    defaultLayout $ addModFormWidget wform enctype []
-
-postAddQuickModR :: Handler Html
-postAddQuickModR = do
-    userId <- requireAuthId
-    ((result, wform), enctype) <- runFormPost $ modEditForm $ Nothing
-    case result of
-         FormMissing -> error "Form missing"
-         FormFailure errs -> defaultLayout $ addModFormWidget wform enctype errs
-         FormSuccess qif  -> do
-             let quickMod = QuickMod {
-                  quickModUid = qifUid qif
-                , quickModName = qifName qif
-                , quickModOwner = userId
-                , quickModDesc = ""
-                , quickModTags = []
-                , quickModCategories = []
-                }
-             runDB $ insert_ quickMod
-             redirect $ QuickModPageR $ qifUid qif
-
-addModFormWidget :: Widget -> Enctype -> [Text] -> Widget
-addModFormWidget wform enctype errs = [whamlet|
-        <form .uk-form .uk-form-horizontal method=post action=@{AddQuickModR} enctype=#{enctype}>
-            <fieldset>
-                <legend>_{MsgAddFormLegend}
-                ^{wform}
-            <button>_{MsgSubmitBtn}
-    |]
-
--- }}}
-
 -- {{{ Misc utilities
 
 -- | Takes the given text and converts newlines into HTML <p> tags.
@@ -168,6 +136,43 @@ getQuickModPageR uid = do
         renderMsg <- getMessageRender
         setTitle $ toHtml $ renderMsg $ MsgModPageTitle $ quickModName qm
         $(widgetFile "quickmod-page")
+
+-- }}}
+
+-- {{{ Add QuickMod
+
+getAddQuickModR :: Handler Html
+getAddQuickModR = do
+    (wform, enctype) <- generateFormPost $ modEditForm $ Nothing
+    defaultLayout $ addModFormWidget wform enctype []
+
+postAddQuickModR :: Handler Html
+postAddQuickModR = do
+    userId <- requireAuthId
+    ((result, wform), enctype) <- runFormPost $ modEditForm $ Nothing
+    case result of
+         FormMissing -> error "Form missing"
+         FormFailure errs -> defaultLayout $ addModFormWidget wform enctype errs
+         FormSuccess qif  -> do
+             let quickMod = QuickMod {
+                  quickModUid = qifUid qif
+                , quickModName = qifName qif
+                , quickModOwner = userId
+                , quickModDesc = ""
+                , quickModTags = qifTags qif
+                , quickModCategories = qifCats qif
+                }
+             runDB $ insert_ quickMod
+             redirect $ QuickModPageR $ qifUid qif
+
+addModFormWidget :: Widget -> Enctype -> [Text] -> Widget
+addModFormWidget wform enctype errs = [whamlet|
+        <form .uk-form .uk-form-horizontal method=post action=@{AddQuickModR} enctype=#{enctype}>
+            <fieldset>
+                <legend>_{MsgAddFormLegend}
+                ^{wform}
+            <button>_{MsgSubmitBtn}
+    |]
 
 -- }}}
 
@@ -200,6 +205,8 @@ postQuickModEditR uid = do
              runDB $ update qmId
                 [ QuickModUid =. qifUid form
                 , QuickModName =. qifName form
+                , QuickModTags =. qifTags form
+                , QuickModCategories =. qifCats form
                 ]
              renderMsg <- getMessageRender
              setMessage $ toHtml $ renderMsg $ MsgQuickModUpdated
