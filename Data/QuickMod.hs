@@ -8,6 +8,7 @@ import Data.String
 import Data.Aeson
 import Data.Aeson.Types
 import Data.Default
+import qualified Data.Vector as V
 
 -- This might change in the future.
 type QMUrl = T.Text
@@ -32,11 +33,7 @@ data QuickMod =
              , qmVerifyUrl      :: Maybe QMUrl
              , qmModId          :: Maybe T.Text
              , qmDescription    :: Maybe T.Text
-             , qmIcon           :: Maybe QMUrl
-             , qmLogo           :: Maybe QMUrl
-             , qmWebsite        :: Maybe QMUrl
-             , qmIssuesUrl      :: Maybe QMUrl
-             , qmDonationsUrl   :: Maybe QMUrl
+             , qmUrls           :: [ModUrl]
              , qmTags           :: [T.Text]
              , qmCategories     :: [T.Text]
              , qmAuthors        :: [Author]
@@ -53,11 +50,7 @@ instance Default QuickMod where
                    , qmVerifyUrl = Nothing
                    , qmModId = Nothing
                    , qmDescription = Nothing
-                   , qmIcon = Nothing
-                   , qmLogo = Nothing
-                   , qmWebsite = Nothing
-                   , qmIssuesUrl = Nothing
-                   , qmDonationsUrl = Nothing
+                   , qmUrls = []
                    , qmTags = []
                    , qmCategories = []
                    , qmAuthors = []
@@ -75,11 +68,7 @@ instance ToJSON QuickMod where
         ?? "verifyUrl"      .= qmVerifyUrl qm
         ?? "modId"          .= qmModId qm
         ?? "description"    .= qmDescription qm
-        ?? "icon"           .= qmIcon qm
-        ?? "logo"           .= qmLogo qm
-        ?? "websiteUrl"     .= qmWebsite qm
-        ?? "issuesUrl"      .= qmIssuesUrl qm
-        ?? "donationsUrl"   .= qmDonationsUrl qm
+        ?? "urls"           .= qmUrls qm
         ?? "tags"           .= qmTags qm
         ?? "categories"     .= qmCategories qm
         ?? "authors"        .= qmAuthors qm
@@ -106,6 +95,21 @@ instance ToJSON [Author] where
     toJSON = object . map aPair
       where
         aPair (Author name roles) = name .= roles
+
+
+-- | Data structure representing an entry in a mod's URL list.
+data ModUrl = ModUrl
+    { muType    :: T.Text
+    , muName    :: T.Text
+    , muUrl     :: T.Text
+    } deriving (Show)
+
+instance ToJSON ModUrl where
+    toJSON mu = object $
+           "type"   .= muType mu
+        ?? "name"   .= muName mu
+        ?? "url"    .= muUrl mu
+        ?? []
 
 -- }}}
 
