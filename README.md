@@ -7,7 +7,7 @@ QuickMod.io is a website which aims to provide people with an easy place to host
 What is QuickMod?
 =================
 
-QuickMod is a system to easily and quickly install mods to your multimc instance.
+QuickMod is a system to easily and quickly install mods to your multimc instance. It doesn't require any modding knowledge. It is also ideal for modpack developers, and mod makers!
 
 
 I just want to play minecraft with mods, is this for me?
